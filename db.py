@@ -45,7 +45,7 @@ class db:
         self.cursor.execute(sql, (server_id, beatmap_id, end,))
         self.db.commit()
 
-    def get_user(self, server_id:int, id):
+    def get_user(self, server_id:int, id:int):
         sql = '''
             SELECT * FROM `user`
             WHERE `server_id`=%s AND `id`=%s
