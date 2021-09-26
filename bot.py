@@ -9,7 +9,7 @@ import logging
 from dotenv import load_dotenv
 from db import db
 from osu import osu
-from utils import get_beatmap_id, fill_string, only_fill, get_tableform, get_introduction
+from utils import get_beatmap_id, fill_string, only_fill, get_tableform, get_introduction, get_beatmap_info, get_table_rank_empty
 
 load_dotenv()
 
@@ -33,7 +33,7 @@ print(mo_osu.token.get("access_token"))  # TEST
 # COMMANDS SECTION
 
 
-"""
+""" use -> get_guild()
 @bot.event
 async def on_guild_join(guild):
     mo_db.save_server(guild.id, guild.name)
@@ -113,6 +113,12 @@ async def mo_playlist(ctx):
 
 @bot.command(name='start', help='Start Multi-Off!')
 async def mo_start(ctx):
+    # Check active play
+    play = mo_db.get_active_play(int(ctx.guild_id))
+    if play:
+        await ctx.respond('Game in progress, try `mo!update`')
+        return
+
     channels = {}
     for guild_id in ctx.get_guild().get_channels():
         ch = ctx.get_guild().get_channel(guild_id)
@@ -132,19 +138,84 @@ async def mo_start(ctx):
 
     # Pick and Show actual beatmap
     beatmap_id = mo_db.get_random_beatmap(int(ctx.guild_id))[0]
-    endtime = datetime.now() + timedelta(minutes=5)
+    endtime = datetime.now() + timedelta(minutes=15)
     mo_db.save_play(server_id=int(ctx.guild_id), beatmap_id=beatmap_id, end=endtime)
 
-    await ctx.respond('Not implemented yet :(')
-    pass
+    beatmap = mo_osu.get_beatmap(beatmap_id)
+    info = get_beatmap_info(beatmap)
+    await channel.send(info)
+
+    rank_array = get_table_rank_empty(start=datetime.now(), delta="15min", end=endtime, left="0:01:00")
+    rank = rank_array[0] + rank_array[1]
+    message = await channel.send(rank)
+
+    mo_db.update_message(int(message.id), int(ctx.guild_id))
+
+    await ctx.respond('Game on!')
 
 
 @bot.command(name='update', help='Update Scores')
 async def mo_update(ctx):
+    mo_db.end_game(int(ctx.guild_id), datetime.now())
+    server_data = mo_db.get_server(int(ctx.guild_id))
+    channel = ctx.get_guild().get_channel(server_data[4])
+    message = await channel.fetch_message(server_data[5])
+    play = mo_db.get_last_play(int(ctx.guild_id))
 
-    await ctx.respond('Not implemented yet :(')
-    pass
+    # Get ranking
+    users = mo_db.get_users(int(ctx.guild_id))
+    rank_users = mo_osu.get_rank_beatmap_play(
+        beatmap=play[2],
+        user_list_db=users,
+        start=str(play[4]),
+        end=str(play[5]),
+        play_id=str(play[0]),
+        mo_db=mo_db
+    )
 
+    # Create Table
+    rank_array = ""
+    if play[3]:
+        rank_array = get_table_rank_empty(start=play[4], delta="15min", end=play[5], left=str(play[5]-datetime.now()))
+    else:
+        rank_array = get_table_rank_empty(start=play[4], delta="15min", end=play[5], left="0", status="Ended")
+    rank = rank_array[0]
+
+    rank_users = dict(sorted(rank_users.items()))
+    for idx, user_key in enumerate(rank_users):
+        user = rank_users[user_key]
+        if idx == 0:
+            mo_db.update_podium_first(play_id=str(play[0]), user_id=user["user_id"])
+        if idx == 1:
+            mo_db.update_podium_second(play_id=str(play[0]), user_id=user["user_id"])
+        if idx == 2:
+            mo_db.update_podium_third(play_id=str(play[0]), user_id=user["user_id"])
+        rank += f'\n║ {fill_string(str(idx+1), 4)} '
+        rank += f'║ {fill_string(user["user_discord"], 13)} '
+        rank += f'║ {fill_string(user["user_osu"], 9)} '
+        rank += f'║ {fill_string(str(user["combo"]), 6)} '
+        rank += f'║ {fill_string(str(user["acc"]), 4)} '
+        rank += f'║ {fill_string(str(user["score"]), 18)} '
+        rank += f'║ {fill_string(user["rank"], 4)} '
+        rank += f'║{fill_string(str(user["time"]), 7)}║'
+    rank += rank_array[1]
+
+    await message.edit(content=rank)
+    await ctx.respond('Updated')
+
+
+@bot.command(name='kill', help='Stop current game')
+async def mo_kill(ctx):
+    mo_db.kill_game(int(ctx.guild_id))
+    await ctx.respond('Game stopped')
+
+
+@bot.command(name='clean', help='Clean multi-off channel')
+async def mo_clean(ctx):
+    server_data = mo_db.get_server(int(ctx.guild_id))
+    channel = ctx.get_guild().get_channel(server_data[4])
+    masseges = await channel.fetch_history(after=server_data[5])
+    await channel.delete_messages(masseges)
 
 #  CHANGE AT DEPLOY
 bot.run(
