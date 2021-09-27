@@ -57,7 +57,7 @@ class osu:
             # Check cached data
             if user[6] == play_id:
                 best = {
-                    "user_id": user[1],
+                    "user_id": user[0],
                     "user_discord": user[2],
                     "user_osu": user[5],
                     "combo": user[8],
@@ -80,7 +80,7 @@ class osu:
                     if not best or play["score"] > best["score"]:
                         if time_dt >= start_dt and time_dt <= end_dt:
                             best = {
-                                "user_id": user[1],
+                                "user_id": user[0],
                                 "user_discord": user[2],
                                 "user_osu": user[5],
                                 "combo": play["max_combo"],
@@ -100,8 +100,8 @@ class osu:
 
             if best:
                 mo_db.update_cache_user(
-                    server_id=user[0],
-                    user_id=user[1],
+                    server_id=user[1],
+                    user_id=user[0],
                     play_id=play_id,
                     score=best["score"],
                     combo=best["combo"],

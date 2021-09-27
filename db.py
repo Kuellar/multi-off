@@ -19,13 +19,13 @@ class db:
         self.cursor.execute(sql, (id, name,))
         self.db.commit()
 
-    def save_user(self, server_id:int, id:int, name:str, osu_id:int, osu_name:str):
+    def save_user(self, id:int, server_id:int,name:str, osu_id:int, osu_name:str):
         sql = '''
-            INSERT INTO user (server_id, id, name, osu_id, osu_name)
+            INSERT INTO user (id, server_id, name, osu_id, osu_name)
             VALUES (%s, %s, %s, %s, %s)
         '''
 
-        self.cursor.execute(sql, (server_id, id, name, osu_id, osu_name,))
+        self.cursor.execute(sql, (id, server_id, name, osu_id, osu_name,))
         self.db.commit()
 
     def save_beatmap(self, id:int, user_id:int, server_id:int):

@@ -52,8 +52,8 @@ async def mo_join(ctx, username: str):
     author = ctx.author.username + '#'+ ctx.author.discriminator
     if osu_player.get('discord') == author:
         mo_db.save_user(
-            server_id=int(ctx.guild_id),
             id=int(ctx.author.id),
+            server_id=int(ctx.guild_id),
             name=str(author),
             osu_id=int(osu_player['id']),
             osu_name=str(osu_player['username']),
@@ -90,7 +90,7 @@ async def mo_add(ctx, beatmap: str):
         await ctx.respond('You need at least B rank')
         return
 
-    mo_db.save_beatmap(int(beatmap_id), int(user[1]), int(ctx.guild_id))
+    mo_db.save_beatmap(int(beatmap_id), int(user[0]), int(ctx.guild_id))
     await ctx.respond('Beatmap added to the play-list!')
 
 
