@@ -33,12 +33,13 @@ print(mo_osu.token.get("access_token"))  # TEST
 # COMMANDS SECTION
 
 
-""" use -> get_guild()
-@bot.event
-async def on_guild_join(guild):
-    mo_db.save_server(guild.id, guild.name)
-    print(f'Adding server: "{guild.name}-{guild.id}" to the db')
-"""
+# use -> get_guild()
+@bot.listen(hikari.GuildAvailableEvent)
+async def on_guild_join(eventguild):
+    server_db = mo_db.get_server(int(eventguild.guild.id))
+    if not server_db:
+        mo_db.save_server(int(eventguild.guild.id), str(eventguild.guild.name))
+
 
 
 @bot.command(name='join', help='Join to Multi-off')
@@ -145,7 +146,7 @@ async def mo_start(ctx):
     info = get_beatmap_info(beatmap)
     await channel.send(info)
 
-    rank_array = get_table_rank_empty(start=datetime.now(), delta="15min", end=endtime, left="0:01:00")
+    rank_array = get_table_rank_empty(start=datetime.now(), delta="15min", end=endtime, left="0:15:00")
     rank = rank_array[0] + rank_array[1]
     message = await channel.send(rank)
 
