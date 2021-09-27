@@ -29,4 +29,4 @@ Help develop this proyect in the following [link](https://github.com/Kuellar/mul
 * [Mysql](https://www.mysql.com/): To store persistent data.
 
 ## License
-[MIT License](./LICENSE.md) :)
+[MIT License](./LICENSE) :)
