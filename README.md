@@ -23,7 +23,7 @@ A Discord bot that allow you play with yours friend Osu multiplayer at async way
 | `mo!clean`                  | Clean multi-off channel           |
 
 ## Development
-Help develop this proyect in the following [link](https://github.com/Kuellar/multi-off/wiki/Development).
+Help to develop this proyect by clicking on the following [link](https://github.com/Kuellar/multi-off/wiki/Development).
 ### Requeriments
 * [Python](https://www.python.org/): To run the project.
 * [Mysql](https://www.mysql.com/): To store persistent data.
