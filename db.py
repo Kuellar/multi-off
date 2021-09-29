@@ -203,3 +203,34 @@ class db:
             """
         self.cursor.execute(sql, (user_id, play_id,))
         self.db.commit()
+
+    def get_ranking(self, server_id):
+        sql = """
+            SELECT u.*, t.third
+            FROM (SELECT u.*, s.second
+            FROM (SELECT u.*, f.first
+            FROM (SELECT id, name, osu_name
+            FROM user
+            WHERE server_id=%s) u
+            LEFT JOIN (SELECT `first` as 'user_id', COUNT(`first`) as 'first'
+            FROM `play`
+            WHERE `first` IS NOT NULL
+            GROUP BY `first`) f
+            ON u.id = f.user_id) u
+            LEFT JOIN (SELECT `second` as 'user_id', COUNT(`second`) as 'second'
+            FROM `play`
+            WHERE `second` IS NOT NULL
+            GROUP BY `second`) s
+            ON u.id = s.user_id) u
+            LEFT JOIN (SELECT `third` as 'user_id', COUNT(`third`) as 'third'
+            FROM `play`
+            WHERE `third` IS NOT NULL
+            GROUP BY `third`) t
+            ON u.id = t.user_id
+            ORDER BY
+                first DESC,
+                second DESC,
+                third DESC;
+            """
+        self.cursor.execute(sql, (server_id,))
+        return self.cursor.fetchall()

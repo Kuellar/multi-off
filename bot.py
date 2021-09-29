@@ -9,7 +9,7 @@ import logging
 from dotenv import load_dotenv
 from db import db
 from osu import osu
-from utils import get_beatmap_id, fill_string, only_fill, get_tableform, get_introduction, get_beatmap_info, get_table_rank_empty
+from utils import get_beatmap_id, fill_string, only_fill, get_tableform, get_introduction, get_beatmap_info, get_table_rank_empty, get_table_grank
 
 load_dotenv()
 
@@ -31,15 +31,11 @@ print(mo_osu.token.get("access_token"))  # TEST
 
 
 # COMMANDS SECTION
-
-
-# use -> get_guild()
 @bot.listen(hikari.GuildAvailableEvent)
 async def on_guild_join(eventguild):
     server_db = mo_db.get_server(int(eventguild.guild.id))
     if not server_db:
         mo_db.save_server(int(eventguild.guild.id), str(eventguild.guild.name))
-
 
 
 @bot.command(name='join', help='Join to Multi-off')
@@ -217,6 +213,23 @@ async def mo_clean(ctx):
     channel = ctx.get_guild().get_channel(server_data[4])
     masseges = await channel.fetch_history(after=server_data[5])
     await channel.delete_messages(masseges)
+
+
+@bot.command(name='ranking', help='Display the global-ranking')
+async def mo_ranking(ctx):
+    ranking = mo_db.get_ranking(int(ctx.guild_id))
+    rank_array = get_table_grank()
+    rank = rank_array[0]
+    for pos, user in enumerate(ranking):
+        rank += f'║ {fill_string(str(pos+1), 4)} '
+        rank += f'║ {fill_string(str(user[1]), 15)} '
+        rank += f'║ {fill_string(str(user[2]), 15)} '
+        rank += f'║ {fill_string(str(user[3]), 6) if user[3] else fill_string("-", 6)} '
+        rank += f'║ {fill_string(str(user[4]), 6) if user[4] else fill_string("-", 6)} '
+        rank += f'║ {fill_string(str(user[5]), 6) if user[5] else fill_string("-", 6)} ║\n'
+    rank += rank_array[1]
+    await ctx.respond(rank)
+
 
 #  CHANGE AT DEPLOY
 bot.run(
