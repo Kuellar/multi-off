@@ -21,6 +21,7 @@ A Discord bot that allow you play with yours friend Osu multiplayer at async way
 | `mo!update`                 | Update Scores                     |
 | `mo!kill`                   | Stop current game                 |
 | `mo!clean`                  | Clean multi-off channel           |
+| `mo!ranking`                | Display the global ranking        |
 
 ## Development
 Help to develop this proyect by clicking on the following [link](https://github.com/Kuellar/multi-off/wiki/Development).
