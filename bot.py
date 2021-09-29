@@ -16,6 +16,7 @@ load_dotenv()
 # Discord connection
 TOKEN = os.getenv('DISCORD_TOKEN')
 bot = lightbulb.Bot(token=TOKEN, prefix="mo!", logs="DEBUG")
+bot.remove_command("help")  #  TODO: Use Auto-Generated
 
 # Database connection
 db_host = os.getenv('db_host')
@@ -237,6 +238,25 @@ async def mo_ranking(ctx):
         rank += f'║ {fill_string(str(user[5]), 6) if user[5] else fill_string("-", 6)} ║\n'
     rank += rank_array[1]
     await ctx.respond(rank)
+
+
+HELP_MESSAGE = """
+> __**Bot help**__
+
+>>> **Commands Available:**
+`join <osu-username>` - Join to Multi-off
+`add <link-beatmap>` - Add new beatmap to the play-list
+`playlist` - Show playlist
+`start` - Start Multi-Off!
+`update` - Update Scores
+`kill` - Stop current game
+`clean` - Clean multi-off channel
+`ranking` - Display the global ranking
+`help` - Displays this message
+"""
+@bot.command()
+async def help(ctx):
+    await ctx.respond(HELP_MESSAGE)
 
 
 #  CHANGE AT DEPLOY

@@ -35,7 +35,6 @@ CREATE TABLE `beatmap` (
   `id` bigint(36) NOT NULL,
   `user_id` bigint(20) NOT NULL,
   `server_id` bigint(36) NOT NULL,
-  `count` int(11) NOT NULL DEFAULT 0 COMMENT 'Nmro de veces jugado',
   `ban` int(11) NOT NULL DEFAULT 0,
   `active` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY(id, user_id, server_id),
@@ -45,7 +44,7 @@ CREATE TABLE `beatmap` (
 
 
 CREATE TABLE `play` (
-  `id` bigint(20) NOT NULL,
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `server_id` bigint(20) NOT NULL,
   `beatmap_id` bigint(20) NOT NULL,
   `active` tinyint(1) NOT NULL DEFAULT 1,
