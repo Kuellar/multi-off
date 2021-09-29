@@ -80,7 +80,15 @@ async def mo_add(ctx, beatmap: str):
 
     beatmap_score_json = mo_osu.get_user_beatmap_score(int(user[4]), int(beatmap_id))
     if 'error' in beatmap_score_json:
-        await ctx.respond('Sorry, some kind of error has occurred')
+        await ctx.respond("You need to pass this level before adding it")
+        return
+
+    if beatmap_score_json['score']['beatmap']['status'] != 'ranked':
+        await ctx.respond('Beatmap need to be ranked')
+        return
+
+    if beatmap_score_json['score']['score'] <= 0:
+        await ctx.respond("You need to pass this level before adding it")
         return
 
     if beatmap_score_json['score']['rank'] not in ['B', 'A', 'SH', 'S', 'SSH', 'SS']:
