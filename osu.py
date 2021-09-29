@@ -18,6 +18,21 @@ class osu:
             },
         ).json()
 
+    def update_token(self):
+        self.token = requests.post(
+            url='https://osu.ppy.sh/oauth/token',
+            headers={
+                "Content-Type": "application/json"
+            },
+            json={
+                'client_id': self.id,
+                'client_secret': self.secret,
+                'grant_type': 'client_credentials',
+                'scope': 'public'
+            },
+        ).json()
+        print("TOKEN UPDATED")
+
     def get_user(self, username):
         return requests.get(
             url=f'https://osu.ppy.sh/api/v2/users/{username}/osu?key=username',

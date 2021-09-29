@@ -28,6 +28,7 @@ mo_db = db(db_host, db_user, "", db_database)
 osu_id= os.getenv('osu_id')
 osu_secret= os.getenv('osu_secret')
 mo_osu = osu(osu_id, osu_secret)
+token_expiration = datetime.now() + timedelta(seconds=mo_osu.token.get('expires_in'))
 print(mo_osu.token.get("access_token"))  # TEST
 
 
@@ -41,6 +42,9 @@ async def on_guild_join(eventguild):
 
 @bot.command(name='join', help='Join to Multi-off')
 async def mo_join(ctx, username: str):
+    if datetime.now() >= token_expiration:
+        mo_osu.update_token()
+
     user_db = mo_db.get_user(int(ctx.guild_id), int(ctx.author.id))
     if user_db:
         await ctx.respond('This user already has an osu account assigned')
@@ -64,6 +68,9 @@ async def mo_join(ctx, username: str):
 
 @bot.command(name='add', help='Add new beatmap to the play-list')
 async def mo_add(ctx, beatmap: str):
+    if datetime.now() >= token_expiration:
+        mo_osu.update_token()
+
     user = mo_db.get_user(int(ctx.guild_id), int(ctx.author.id))
     if not user:
         await ctx.respond('Join to multi-off with `mo!join "osu-username"`')
@@ -102,6 +109,9 @@ async def mo_add(ctx, beatmap: str):
 
 @bot.command(name='playlist', help='Show playlist')
 async def mo_playlist(ctx):
+    if datetime.now() >= token_expiration:
+        mo_osu.update_token()
+
     playlist = [mo_osu.get_beatmap(beatmap[0]) for beatmap in mo_db.get_beatmaps(int(ctx.guild_id))]
     tableform = get_tableform()
     res = tableform[0]
@@ -119,6 +129,9 @@ async def mo_playlist(ctx):
 
 @bot.command(name='start', help='Start Multi-Off!')
 async def mo_start(ctx):
+    if datetime.now() >= token_expiration:
+        mo_osu.update_token()
+
     # Check active play
     play = mo_db.get_active_play(int(ctx.guild_id))
     if play:
@@ -162,6 +175,9 @@ async def mo_start(ctx):
 
 @bot.command(name='update', help='Update Scores')
 async def mo_update(ctx):
+    if datetime.now() >= token_expiration:
+        mo_osu.update_token()
+
     mo_db.end_game(int(ctx.guild_id), datetime.now())
     server_data = mo_db.get_server(int(ctx.guild_id))
     channel = ctx.get_guild().get_channel(server_data[4])
