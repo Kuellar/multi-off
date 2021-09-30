@@ -1,17 +1,18 @@
 import os
-import random
-import time
 from datetime import datetime, timedelta
 
-import lightbulb
 import hikari
-import logging
+import lightbulb
 from dotenv import load_dotenv
+
 from db import db
 from osu import osu
-from utils import get_beatmap_id, fill_string, only_fill, get_tableform, get_introduction, get_beatmap_info, get_table_rank_empty, get_table_grank
+from utils import (fill_string, get_beatmap_id, get_beatmap_info,
+                   get_introduction, get_table_grank, get_table_rank_empty,
+                   get_tableform, only_fill)
 
 load_dotenv()
+DEBUG = os.getenv('DEBUG')
 
 # Discord connection
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -128,9 +129,30 @@ async def mo_playlist(ctx):
 
 
 @bot.command(name='start', help='Start Multi-Off!')
-async def mo_start(ctx):
+async def mo_start(ctx, hours=0, minutes=0):
+    hours = int(hours)
+    minutes = int(minutes)
     if datetime.now() >= token_expiration:
         mo_osu.update_token()
+
+    if hours==0 and minutes==0:
+        await ctx.respond('Try `mo!start <hours> <optional:minutes>`')
+        return
+
+    # Check valid time
+    if hours<0 or minutes<0:
+        await ctx.respond('Invalid time')
+        return
+
+    # Check players
+    if not mo_db.get_users(int(ctx.guild_id)):
+        await ctx.respond('First try `mo!join <osu-username>`')
+        return
+
+    # Check beatmap
+    if not mo_db.get_beatmaps(int(ctx.guild_id)):
+        await ctx.respond('First try `mo!add <link-beatmap>`')
+        return
 
     # Check active play
     play = mo_db.get_active_play(int(ctx.guild_id))
@@ -157,14 +179,15 @@ async def mo_start(ctx):
 
     # Pick and Show actual beatmap
     beatmap_id = mo_db.get_random_beatmap(int(ctx.guild_id))[0]
-    endtime = datetime.now() + timedelta(minutes=15)
+    starttime = datetime.now()
+    endtime = starttime + timedelta(hours=hours, minutes=minutes)
     mo_db.save_play(server_id=int(ctx.guild_id), beatmap_id=beatmap_id, end=endtime)
 
     beatmap = mo_osu.get_beatmap(beatmap_id)
     info = get_beatmap_info(beatmap)
     await channel.send(info)
 
-    rank_array = get_table_rank_empty(start=datetime.now(), delta="15min", end=endtime, left="0:15:00")
+    rank_array = get_table_rank_empty(start=starttime, delta=str(endtime-starttime), end=endtime, left=f"{hours}:{minutes}")
     rank = rank_array[0] + rank_array[1]
     message = await channel.send(rank)
 
@@ -198,9 +221,9 @@ async def mo_update(ctx):
     # Create Table
     rank_array = ""
     if play[3]:
-        rank_array = get_table_rank_empty(start=play[4], delta="15min", end=play[5], left=str(play[5]-datetime.now()))
+        rank_array = get_table_rank_empty(start=play[4], delta=str(play[5]-play[4]), end=play[5], left=str(play[5]-datetime.now()))
     else:
-        rank_array = get_table_rank_empty(start=play[4], delta="15min", end=play[5], left="0", status="Ended")
+        rank_array = get_table_rank_empty(start=play[4], delta=str(play[5]-play[4]), end=play[5], left="0", status="Ended")
     rank = rank_array[0]
 
     rank_users = dict(sorted(rank_users.items()))
@@ -275,9 +298,13 @@ async def help(ctx):
     await ctx.respond(HELP_MESSAGE)
 
 
-#  CHANGE AT DEPLOY
-bot.run(
+
+if DEBUG:
+    bot.run(
     asyncio_debug=True,
     coroutine_tracking_depth=20,
     propagate_interrupts=True,
 )
+
+else:
+    bot.run()
