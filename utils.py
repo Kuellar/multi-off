@@ -1,6 +1,6 @@
 def get_beatmap_id(beatmap:str):
     if 'osu.ppy.sh/beatmapsets' in beatmap:
-        return beatmap.split('#osu/')[1]
+        return int(beatmap.split('#osu/')[1])
     return False
 
 def fill_string(word, length):

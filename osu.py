@@ -65,24 +65,24 @@ class osu:
 
     def get_rank_beatmap_play(self, beatmap, user_list_db, start, end, play_id, mo_db):
         res = {}
-        start_dt = datetime.strptime(start, "%Y-%m-%d %H:%M:%S")
-        end_dt = datetime.strptime(end, "%Y-%m-%d %H:%M:%S")
+        start_dt = datetime.strptime(start, "%Y-%m-%d %H:%M:%S") # Check
+        end_dt = datetime.strptime(end, "%Y-%m-%d %H:%M:%S") # Check
         for user in user_list_db:
             best = {}
             # Check cached data
-            if user[6] == play_id:
+            if user.cache_play_id == play_id:
                 best = {
-                    "user_id": user[0],
-                    "user_discord": user[2],
-                    "user_osu": user[5],
-                    "combo": user[8],
-                    "acc": user[9],
-                    "score": user[7],
-                    "rank": user[10],
-                    "time": datetime.strptime(user[11], "%Y-%m-%d %H:%M:%S"),
+                    "user_id": user.id,
+                    "user_discord": user.name,
+                    "user_osu": user.osu_name,
+                    "combo": user.cache_combo,
+                    "acc": user.cache_acc,
+                    "score": user.cache_score,
+                    "rank": user.cache_rank,
+                    "time": user.cache_time,
                 }
             plays = requests.get(
-                    url=f'https://osu.ppy.sh/api/v2/users/13780839/scores/recent?mode=osu&limit=3000',
+                    url=f'https://osu.ppy.sh/api/v2/users/{user.osu_id}/scores/recent?mode=osu&limit=3000',
                     headers={
                         "Content-Type": "application/json",
                         "Accept": "application/json",
@@ -95,9 +95,9 @@ class osu:
                     if not best or play["score"] > best["score"]:
                         if time_dt >= start_dt and time_dt <= end_dt:
                             best = {
-                                "user_id": user[0],
-                                "user_discord": user[2],
-                                "user_osu": user[5],
+                                "user_id": user.id,
+                                "user_discord": user.name,
+                                "user_osu": user.osu_name,
                                 "combo": play["max_combo"],
                                 "acc": play["accuracy"],
                                 "score": play["score"],
@@ -114,15 +114,17 @@ class osu:
                             print(start_dt)
 
             if best:
-                mo_db.update_cache_user(
-                    server_id=user[1],
-                    user_id=user[0],
-                    play_id=play_id,
-                    score=best["score"],
-                    combo=best["combo"],
-                    acc=best["acc"],
-                    rank=best["rank"],
-                    time=best["time"],
-                )
-                res[best["score"]] = best
+                user.cache_play_id = play_id
+                user.cache_score = best["score"]
+                user.cache_combo = best["combo"]
+                user.cache_acc = best["acc"]
+                user.cache_rank = best["rank"]
+                user.cache_time = best["time"]
+                mo_db.commit()
+                # check: Muy dificl que este caso ocurra como para poner un while
+                if not res.get(best["score"]):
+                    res[best["score"]] = best
+                else:
+                    tmp = int(best["score"]) + 1
+                    res[str(tmp)] = best
         return res
