@@ -91,7 +91,7 @@ class osu:
                     ).json()
             for play in plays:
                 if play["beatmap"]["id"] == beatmap:
-                    time_dt = datetime.strptime(play["created_at"], "%Y-%m-%dT%H:%M:%S+00:00") - timedelta(hours=3)
+                    time_dt = datetime.strptime(play["created_at"], "%Y-%m-%dT%H:%M:%S+00:00") - timedelta(hours=3) # Delete at deploy
                     if not best or play["score"] > best["score"]:
                         if time_dt >= start_dt and time_dt <= end_dt:
                             best = {
@@ -104,14 +104,6 @@ class osu:
                                 "rank": play["rank"],
                                 "time": time_dt,
                             }
-                        else:
-                            # Check cambios de horas ...
-                            # No deberian caer muchos casos en este else
-                            # si las partidas duran más de 24hrs
-                            print("-----------")
-                            print(time_dt)
-                            print(end_dt)
-                            print(start_dt)
 
             if best:
                 user.cache_play_id = play_id
