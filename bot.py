@@ -315,9 +315,8 @@ async def mo_update(ctx):
                 rank += f'║ {fill_string(user_play["user_osu"], 9)} '
                 rank += f'║ {fill_string(str(user_play["combo"]), 6)} '
                 rank += f'║ {fill_string(str(user_play["acc"]), 4)} '
-                rank += f'║ {fill_string(str(user_play["score"]), 18)} '
-                rank += f'║ {fill_string(user_play["rank"], 4)} '
-                rank += f'║{fill_string(str(user_play["time"]), 7)}║'
+                rank += f'║ {fill_string(str(user_play["score"])+" - "+user_play["rank"], 18)} '
+                rank += f'║{fill_string(str(user_play["time"])[5:].replace("-","/"), 14)}║'
                 count += 1
             rank += rank_array[1]
 
@@ -381,13 +380,13 @@ async def mo_ranking(ctx):
             for play in plays:
                 if play.first:
                     ranking[play.first]['first'] += 1
-                    ranking[play.first]['points'] += 3
+                    ranking[play.first]['points'] -= 3
                     if play.second:
                         ranking[play.second]['second'] += 1
-                        ranking[play.second]['points'] += 2
+                        ranking[play.second]['points'] -= 2
                         if play.third:
                             ranking[play.third]['third'] += 1
-                            ranking[play.third]['points'] += 1
+                            ranking[play.third]['points'] -= 1
 
             rank_array = get_table_grank()
             rank = rank_array[0]

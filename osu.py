@@ -121,10 +121,10 @@ class osu:
                 user.cache_rank = best["rank"]
                 user.cache_time = best["time"]
                 mo_db.commit()
-                # check: Muy dificl que este caso ocurra como para poner un while
-                if not res.get(best["score"]):
-                    res[best["score"]] = best
-                else:
-                    tmp = int(best["score"]) + 1
-                    res[str(tmp)] = best
+                # Evita scores repetidos
+                tmp = best["score"]
+                while res.get(tmp):
+                    tmp += 1
+                res[tmp] = best
+
         return res
