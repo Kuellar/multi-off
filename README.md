@@ -30,4 +30,4 @@ Help to develop this proyect by clicking on the following [link](https://github.
 * [Mysql](https://www.mysql.com/): To store persistent data.
 
 ## License
-[MIT License](./LICENSE) :)
+[MIT License](./.github/LICENSE) :)
