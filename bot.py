@@ -17,7 +17,7 @@ from utils import (fill_string, get_beatmap_id, get_beatmap_info,
 from model import Server, User, Beatmap, Play
 
 load_dotenv()
-DEBUG = os.getenv('DEBUG')
+DEBUG = bool(os.getenv('DEBUG'))
 
 # Discord connection
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -27,9 +27,10 @@ bot.remove_command("help")  #  TODO: Use Auto-Generated
 # Database connection
 db_host = os.getenv('db_host')
 db_user = os.getenv('db_user')
+db_password = os.getenv('db_password')
 db_database = os.getenv('db_database')
 
-DATABSE_URI=f'mysql+mysqlconnector://{db_user}:{""}@{db_host}/{db_database}'
+DATABSE_URI=f'mysql+mysqlconnector://{db_user}:{db_password}@{db_host}/{db_database}'
 engine = create_engine(DATABSE_URI)
 connection = engine.connect()
 metadata = MetaData()
@@ -89,8 +90,10 @@ async def mo_join(ctx, username: str):
                 await ctx.respond(f'{username} joined successfully')
             else:
                 await ctx.respond('Sorry, some kind of error has occurred')
-        except:
+        except Exception as e:
             await ctx.respond('Sorry, some kind of fatal error has occurred')
+            if DEBUG:
+                await ctx.respond(e)
         finally:
             session.commit()
             session.close()
@@ -144,8 +147,10 @@ async def mo_add(ctx, beatmap: str):
             )
             session.add(new_beatmap)
             await ctx.respond('Beatmap added to the play-list!')
-        except:
+        except Exception as e:
             await ctx.respond('Sorry, some kind of fatal error has occurred')
+            if DEBUG:
+                await ctx.respond(e)
         finally:
                 session.commit()
                 session.close()
@@ -173,8 +178,10 @@ async def mo_playlist(ctx):
                 res += f'║ https://osu.ppy.sh/beatmaps/{only_fill(str(map["id"]), 7)} ║{tableform[1]}'
             res += tableform[2]
             await ctx.respond(res)
-        except:
+        except Exception as e:
             await ctx.respond('Sorry, some kind of fatal error has occurred')
+            if DEBUG:
+                await ctx.respond(e)
         finally:
             session.commit()
             session.close()
@@ -257,14 +264,16 @@ async def mo_start(ctx, hours=0, minutes=0):
             server.message_id = message.id
 
             await ctx.respond('Game on!')
-        except:
+        except Exception as e:
             await ctx.respond('Sorry, some kind of fatal error has occurred')
+            if DEBUG:
+                await ctx.respond(e)
         finally:
             session.commit()
             session.close()
 
 
-@bot.command(name='update', help='Update Scores')
+@bot.command(name='update')
 async def mo_update(ctx):
     if datetime.now() >= token_expiration:
         mo_osu.update_token()
@@ -332,14 +341,16 @@ async def mo_update(ctx):
                 await ctx.respond('Updated')
             else:
                 await ctx.respond('Updated - GameOver')
-        except:
+        except Exception as e:
             await ctx.respond('Sorry, some kind of fatal error has occurred')
+            if DEBUG:
+                await ctx.respond(e)
         finally:
             session.commit()
             session.close()
 
 
-@bot.command(name='kill', help='Stop current game')
+@bot.command(name='kill')
 async def mo_kill(ctx):
     SessionFactory = sessionmaker(engine)
     with SessionFactory() as session:
@@ -352,13 +363,15 @@ async def mo_kill(ctx):
                 play.active=False
                 session.commit()
             await ctx.respond('Game stopped')
-        except:
+        except Exception as e:
             await ctx.respond('Sorry, some kind of fatal error has occurred')
+            if DEBUG:
+                await ctx.respond(e)
         finally:
             session.close()
 
 
-@bot.command(name='clean', help='Clean multi-off channel')
+@bot.command(name='clean')
 async def mo_clean(ctx):
     SessionFactory = sessionmaker(engine)
     with SessionFactory() as session:
@@ -367,13 +380,15 @@ async def mo_clean(ctx):
             channel = ctx.get_guild().get_channel(server_data.channel_id)
             masseges = await channel.fetch_history(after=server_data.message_id)
             await channel.delete_messages(masseges)
-        except:
+        except Exception as e:
             await ctx.respond('Sorry, some kind of fatal error has occurred')
+            if DEBUG:
+                await ctx.respond(e)
         finally:
             session.close()
 
 
-@bot.command(name='ranking', help='Display the global-ranking')
+@bot.command(name='ranking')
 async def mo_ranking(ctx):
     SessionFactory = sessionmaker(engine)
     with SessionFactory() as session:
@@ -414,8 +429,10 @@ async def mo_ranking(ctx):
                 count += 1
             rank += rank_array[1]
             await ctx.respond(rank)
-        except:
+        except Exception as e:
             await ctx.respond('Sorry, some kind of fatal error has occurred')
+            if DEBUG:
+                await ctx.respond(e)
         finally:
             session.close()
 

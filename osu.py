@@ -1,5 +1,10 @@
 import requests
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
+
+load_dotenv()
+import os
+delta_time = int(os.getenv('delta_time'))
 
 class osu:
     def __init__(self, id, secret):
@@ -91,7 +96,7 @@ class osu:
                     ).json()
             for play in plays:
                 if play["beatmap"]["id"] == beatmap:
-                    time_dt = datetime.strptime(play["created_at"], "%Y-%m-%dT%H:%M:%S+00:00") - timedelta(hours=3) # Delete at deploy
+                    time_dt = datetime.strptime(play["created_at"], "%Y-%m-%dT%H:%M:%S+00:00") + timedelta(hours=delta_time) # Delete at deploy
                     if not best or play["score"] > best["score"]:
                         if time_dt >= start_dt and time_dt <= end_dt:
                             best = {
