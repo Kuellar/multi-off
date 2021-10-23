@@ -89,6 +89,8 @@ async def mo_join(ctx, username: str):
                 await ctx.respond(f'{username} joined successfully')
             else:
                 await ctx.respond('Sorry, some kind of error has occurred')
+        except:
+            await ctx.respond('Sorry, some kind of fatal error has occurred')
         finally:
             session.commit()
             session.close()
@@ -142,6 +144,8 @@ async def mo_add(ctx, beatmap: str):
             )
             session.add(new_beatmap)
             await ctx.respond('Beatmap added to the play-list!')
+        except:
+            await ctx.respond('Sorry, some kind of fatal error has occurred')
         finally:
                 session.commit()
                 session.close()
@@ -169,6 +173,8 @@ async def mo_playlist(ctx):
                 res += f'║ https://osu.ppy.sh/beatmaps/{only_fill(str(map["id"]), 7)} ║{tableform[1]}'
             res += tableform[2]
             await ctx.respond(res)
+        except:
+            await ctx.respond('Sorry, some kind of fatal error has occurred')
         finally:
             session.commit()
             session.close()
@@ -251,7 +257,8 @@ async def mo_start(ctx, hours=0, minutes=0):
             server.message_id = message.id
 
             await ctx.respond('Game on!')
-
+        except:
+            await ctx.respond('Sorry, some kind of fatal error has occurred')
         finally:
             session.commit()
             session.close()
@@ -325,6 +332,8 @@ async def mo_update(ctx):
                 await ctx.respond('Updated')
             else:
                 await ctx.respond('Updated - GameOver')
+        except:
+            await ctx.respond('Sorry, some kind of fatal error has occurred')
         finally:
             session.commit()
             session.close()
@@ -343,6 +352,8 @@ async def mo_kill(ctx):
                 play.active=False
                 session.commit()
             await ctx.respond('Game stopped')
+        except:
+            await ctx.respond('Sorry, some kind of fatal error has occurred')
         finally:
             session.close()
 
@@ -356,6 +367,8 @@ async def mo_clean(ctx):
             channel = ctx.get_guild().get_channel(server_data.channel_id)
             masseges = await channel.fetch_history(after=server_data.message_id)
             await channel.delete_messages(masseges)
+        except:
+            await ctx.respond('Sorry, some kind of fatal error has occurred')
         finally:
             session.close()
 
@@ -401,6 +414,8 @@ async def mo_ranking(ctx):
                 count += 1
             rank += rank_array[1]
             await ctx.respond(rank)
+        except:
+            await ctx.respond('Sorry, some kind of fatal error has occurred')
         finally:
             session.close()
 
