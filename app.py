@@ -53,8 +53,8 @@ def servers():
                     "plays": plays,
                     "beatmaps": beatmaps,
                 })
-        except Exception as e:
-            return {"error": e}
+        except:
+            return {"error": ":("}
         finally:
             session.close()
             return jsonify(res)
@@ -71,8 +71,8 @@ def server(server_id):
             players = len(session.query(User).filter_by(server_id=server.id).all())
             plays = len(session.query(Play).filter_by(server_id=server.id).all())
             beatmaps = len(session.query(Beatmap).filter_by(server_id=server.id).all())
-        except Exception as e:
-            return {"error": str(e)}
+        except:
+            return {"error": ":("}
         else:
             res = {
             "name": server.name,
